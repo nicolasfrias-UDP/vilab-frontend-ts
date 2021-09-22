@@ -1,10 +1,11 @@
 export interface ExampleStateInterface {
-  prop: boolean;
+  user: any;
 }
 
-function state(): ExampleStateInterface {
+function state() {
   return {
-    prop: false
+    user: '',
+    idioma: ''
   }
 };
 

@@ -1,6 +1,15 @@
 {
   "extends": "@quasar/app/tsconfig-preset",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "noImplicitThis": true,
+    "declaration": false,
+    "noImplicitAny": false,
+    "noUnusedParameters": true,
+    "noUnusedLocals": false
   }
 }

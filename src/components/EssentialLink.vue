@@ -2,8 +2,7 @@
   <q-item
     clickable
     tag="a"
-    target="_blank"
-    :href="link"
+    @click='$router.push({name:link})'
   >
     <q-item-section
       v-if="icon"
