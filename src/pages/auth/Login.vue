@@ -55,7 +55,6 @@ import { defineComponent, ref } from 'vue';
 
 
 function OnSubmit(){
-  console.log("logearse");
 }
 export default defineComponent({
   // name: 'PageName'

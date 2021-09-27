@@ -1,7 +1,7 @@
 <template>
-  <q-btn color="primary" label="Cambiar idioma" flat no-caps>
+  <q-btn color='primary' label='Cambiar idioma' flat no-caps>
     <q-menu>
-      <q-list style="min-width: 100px">
+      <q-list style='min-width: 100px'>
         <q-item clickable v-close-popup>
           <q-item-section>New tab</q-item-section>
         </q-item>
@@ -15,27 +15,17 @@
         <q-item clickable v-close-popup>
           <q-item-section>History</q-item-section>
         </q-item>
-        <q-item clickable v-close-popup>
-          <q-item-section>Downloads</q-item-section>
-        </q-item>
-        <q-separator />
-        <q-item clickable v-close-popup>
-          <q-item-section>Settings</q-item-section>
-        </q-item>
-        <q-separator />
-        <q-item clickable v-close-popup>
-          <q-item-section>Help &amp; Feedback</q-item-section>
-        </q-item>
       </q-list>
     </q-menu>
   </q-btn>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang='ts'>
+import { defineComponent } from 'vue';
+
 export default defineComponent({
-  setup(){
+  setup() {
 
   }
-})
+});
 </script>

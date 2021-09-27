@@ -82,11 +82,17 @@ const linksList = [
     caption: 'Ingreso a la pagina principal de predios',
     icon: 'fas fa-map',
     link: 'plot.index'
+  },
+  {
+    title: 'Roles',
+    caption: 'Manejar los roles del sistema',
+    icon: 'fas fa-map',
+    link: 'role.index'
   }
 ];
 
 const userTabs = [
-  { title: 'Mi perfil', routeName: 'ga' },
+  { title: 'Mi perfil', routeName: 'plot.index' },
   { title: 'Cerrar', routeName: 'gawdadwa' }
 ];
 
