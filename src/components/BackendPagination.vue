@@ -14,6 +14,7 @@
 
 <script lang='ts'>
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
+import { api } from 'boot/axios';
 
 export default defineComponent({
   name: 'BackendPagination',
@@ -23,13 +24,13 @@ export default defineComponent({
       default: '/test'
     },
     data: {
-      type: [Array,Object]
+      type: [Array, Object]
     },
-    perPage:{
-      type:[Array, Object, String, Number]
+    perPage: {
+      type: [Array, Object, String, Number]
     }
   },
-  setup(props, { root: { $axios }, emit }) {
+  setup(props, { emit }) {
 
     let lastpage = ref(0);
     let _data = computed({
@@ -48,14 +49,15 @@ export default defineComponent({
     watch(current, (next) => {
       getData(props.endpoint, Number(next));
     });
-    let _perPage=computed({
-      get:()=>{
-        return props.perPage
+    let _perPage = computed({
+      get: () => {
+        return props.perPage;
       },
-      set:(value)=>emit("update:perPage",value)
-    }).value
-    function getData(endpoint: string, page: Number = 1) {
-      $axios.get(endpoint + '?page=' + page).then(({ data }) => {
+      set: (value) => emit('update:perPage', value)
+    }).value;
+
+    function getData(endpoint = '', page = 1) {
+      void api.get(endpoint + '?page=' + String(page)).then(({ data }) => {
         const paginationContext = data.data;
         emit('update:data', paginationContext);
         lastpage.value = paginationContext.last_page;
@@ -65,7 +67,8 @@ export default defineComponent({
 
     return {
       current,
-      lastpage
+      lastpage,
+      _perPage
     };
   }
 });

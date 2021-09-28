@@ -15,7 +15,7 @@
             <q-item-label class='text-grey-7 text-h5 caption'>Iniciar sesión</q-item-label>
           </div>
           <br>
-          <q-separator/>
+          <q-separator />
           <br>
           <q-input
             v-model='user_login'
@@ -54,8 +54,10 @@
 import { defineComponent, ref } from 'vue';
 
 
-function OnSubmit(){
+function OnSubmit() {
+  console.log('ga');
 }
+
 export default defineComponent({
   // name: 'PageName'
   setup() {

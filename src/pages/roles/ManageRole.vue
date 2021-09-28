@@ -1,8 +1,8 @@
 <template>
   <q-page class='q-pa-md'>
 
-    <q-form class='q-gutter-md' @submit='submit'>
-
+    <q-form ref='myform' class='q-gutter-md' @submit='submit'>
+      <span class='text-h5'>Crear item</span>
       <div class='row'>
         <div class='col-12 col-md-5 col-sm-12 q-mr-md q-mt-md'>
           <q-input rounded outlined v-model='title' label='Titulo' />
@@ -19,160 +19,67 @@
         </div>
       </div>
       <q-btn type='submit' color='secondary' icon='far fa-save' label='Guardar' rounded />
-      <q-btn flat rounded color='red' label='Cancelar' />
 
 
     </q-form>
     <br>
     <q-separator />
     <br>
+    <q-form ref='createRoleForm' class='q-gutter-md'>
+      <span class='text-h5'>Crear rol</span>
+      <div class='row'>
 
-    <q-table
-      title='Treats'
-      dense
-      :rows='rows'
-      :columns='columns'
-      row-key='name'
-    />
-    <GenericTableBackend
-                         class="col"
-                         endpoint='http://localhost:8083/rest/item/get'
-                          :columns='columns' :view="view"
-    >
-    </GenericTableBackend>
+        <div class='col-12 col-md-5 col-sm-12 q-mr-md q-mt-md'>
+          <q-input rounded outlined v-model='title' label='Inserte nombre' />
+        </div>
+
+      </div>
+      <q-btn color='secondary' icon='mail' label='Guardar' rounded />
+    </q-form>
     <br>
-    <q-btn color='secondary' icon='mail' label='Guardar' rounded />
-    <q-btn flat rounded color='red' label='Cancelar' />
+
+    <q-separator />
+    <br>
+
+    <GenericTableBackend
+      :columns='columns'
+      endpoint='http://localhost:8083/rest/item/get'
+      :edit='edit'
+      :remove='remove'
+    />
+    <br>
+
   </q-page>
 </template>
 
 <script lang='ts'>
 import { defineComponent, ref } from 'vue';
 import GenericTableBackend from 'components/tables/GenericTableBackend.vue';
+import { api } from 'boot/axios';
+
+
 const columns = [
-  {
-    name: 'name',
-    required: true,
-    label: 'Dessert (100g serving)',
-    align: 'left',
-    field: row => row.name,
-    sortable: true
-  },
-  { name: 'calories', align: 'center', label: 'Calories', field: 'calories', sortable: true },
-  { name: 'fat', label: 'Fat (g)', field: 'fat', sortable: true },
-  { name: 'carbs', label: 'Carbs (g)', field: 'carbs' },
-  { name: 'protein', label: 'Protein (g)', field: 'protein' },
-  { name: 'sodium', label: 'Sodium (mg)', field: 'sodium' },
-  {
-    name: 'calcium',
-    label: 'Calcium (%)',
-    field: 'calcium',
-    sortable: true,
-    sort: (a, b) => parseInt(a, 10) - parseInt(b, 10)
-  },
-  { name: 'iron', label: 'Iron (%)', field: 'iron', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) }
+  // {name: 'id', align: 'center', label: 'ID', field: 'id', sortable: true},
+  { name: 'title', align: 'center', label: 'Titulo', field: 'title', sortable: true },
+  { name: 'icon', align: 'center', label: 'Icono', field: 'icon', sortable: true },
+  { name: 'route', align: 'center', label: 'Ruta', field: 'route', sortable: true },
+  { name: 'actions', align: 'center', label: 'Acciones', field: 'actions', sortable: false }
 ];
 
 const rows = [
   {
-    name: 'Frozen Yogurt',
-    calories: 159,
-    fat: 6.0,
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: '14%',
-    iron: '1%'
+    title: 'Frozen Yogurt',
+    icon: 'eeeeeee',
+    route: 'aea'
   },
   {
-    name: 'Ice cream sandwich',
-    calories: 237,
-    fat: 9.0,
-    carbs: 37,
-    protein: 4.3,
-    sodium: 129,
-    calcium: '8%',
-    iron: '1%'
-  },
-  {
-    name: 'Eclair',
-    calories: 262,
-    fat: 16.0,
-    carbs: 23,
-    protein: 6.0,
-    sodium: 337,
-    calcium: '6%',
-    iron: '7%'
-  },
-  {
-    name: 'Cupcake',
-    calories: 305,
-    fat: 3.7,
-    carbs: 67,
-    protein: 4.3,
-    sodium: 413,
-    calcium: '3%',
-    iron: '8%'
-  },
-  {
-    name: 'Gingerbread',
-    calories: 356,
-    fat: 16.0,
-    carbs: 49,
-    protein: 3.9,
-    sodium: 327,
-    calcium: '7%',
-    iron: '16%'
-  },
-  {
-    name: 'Jelly bean',
-    calories: 375,
-    fat: 0.0,
-    carbs: 94,
-    protein: 0.0,
-    sodium: 50,
-    calcium: '0%',
-    iron: '0%'
-  },
-  {
-    name: 'Lollipop',
-    calories: 392,
-    fat: 0.2,
-    carbs: 98,
-    protein: 0,
-    sodium: 38,
-    calcium: '0%',
-    iron: '2%'
-  },
-  {
-    name: 'Honeycomb',
-    calories: 408,
-    fat: 3.2,
-    carbs: 87,
-    protein: 6.5,
-    sodium: 562,
-    calcium: '0%',
-    iron: '45%'
-  },
-  {
-    name: 'Donut',
-    calories: 452,
-    fat: 25.0,
-    carbs: 51,
-    protein: 4.9,
-    sodium: 326,
-    calcium: '2%',
-    iron: '22%'
-  },
-  {
-    name: 'KitKat',
-    calories: 518,
-    fat: 26.0,
-    carbs: 65,
-    protein: 7,
-    sodium: 54,
-    calcium: '12%',
-    iron: '6%'
+    title: 'gaaaaaaaaaa',
+    icon: 'eeeeeee',
+    route: 'aea'
+  }, {
+    title: 'Faeaeat',
+    icon: 'eeeeeee',
+    route: 'aea'
   }
 ];
 export default defineComponent({
@@ -183,23 +90,45 @@ export default defineComponent({
     const title = ref('');
     const route = ref('');
     const icon = ref('');
+    const myform = ref('');
 
-    function view (id: any) {
-      console.log(id)
+    function view(id: any) {
+      console.log(id);
     }
 
-    function submit(evt){
-      console.log("enviar");
-      evt.target.submit()
+    function edit(row) {
+      console.log(row);
     }
+
+    function remove(row){
+      console.log(row);
+      return new Promise((resolve)=>{
+        resolve('remove')
+      })
+    }
+    function submit(evt) {
+      console.log(myform.value);
+      void api.post('rest/item/save', {
+        title: title.value,
+        route: route.value,
+        icon: icon.value
+      }).then((res) => {
+        console.log(res);
+      });
+      evt.target.submit();
+    }
+
     return {
+      myform,
       title,
       route,
       icon,
       rows,
       columns,
       view,
-      submit
+      submit,
+      edit,
+      remove
     };
   }
 });

@@ -1,27 +1,19 @@
 <template>
   <div>
-
-    <QTable
+    <q-table
       :columns='_columns'
-      :rows='objData'
+      v-model:rows='rows'
       :filter='filter'
       :loading='visible'
       :pagination='_pagination'
       :row-key="rowKey?rowKey:'id'"
+      table-header-class="text-black text-capitalize text-weight-bold"
       bordered
       class='q-mt-md'
       flat
       loading-label='Loading, please wait...'
       no-data-label='No hay datos que mostrar.'
     >
-      <template v-slot:body-cell-prices='cell'>
-        <QTd auto-width>
-          <li v-for='(item,index) in cell.row.prices' :key='index'>{{ item.interval.name }} - {{ item.name }}
-            ({{ item.price }})
-            {{ item.currency }})
-          </li>
-        </QTd>
-      </template>
       <template v-slot:body-cell-actions='cell'>
         <QTd auto-width>
           <QBtn v-if='view' color='black' dense fab-mini flat @click='doView(cell.row.id)'>
@@ -33,35 +25,26 @@
             <q-icon :name="cell.row.active ? 'check_circle' : 'block'" style='font-size: 20px' />
             <QTooltip>{{ cell.row.active ? 'Activo' : 'Inactivo' }}</QTooltip>
           </QBtn>
-          <QBtn v-if='edit' color='black' dense fab-mini flat @click='doEdit(cell.row.id)'>
+          <QBtn v-if='edit' class='text-blue-3' dense fab-mini flat @click='doEdit(cell.row.id)'>
             <q-icon name='edit' style='font-size: 20px' />
             <QTooltip>Editar</QTooltip>
           </QBtn>
-          <QBtn v-if='platform' color='black' dense fab-mini flat @click='doPlatform(cell.row.platform.id)'>
-            <q-icon name='fas fa-cog' style='font-size: 20px' />
-            <QTooltip>Plataforma</QTooltip>
-          </QBtn>
-          <QBtn v-if='payment' color='black' dense fab-mini flat @click='doPayment(cell.row.id)'>
-            <q-icon name='payments' style='font-size: 20px' />
-            <QTooltip>Pagos</QTooltip>
-          </QBtn>
-          <QBtn v-if='prices' color='black' dense fab-mini flat @click='doPrices(cell.row.id)'>
-            <q-icon name='payments' style='font-size: 20px' />
-            <QTooltip>Precios</QTooltip>
-          </QBtn>
-          <QBtn v-if='values' :disabled='!cell.row.show_in_segmentation_value' dense fab-mini flat
-                @click='doValues(cell.row.id)'>
-            <q-icon name='fas fa-bezier-curve' style='font-size: 20px' />
-            <QTooltip>Valores</QTooltip>
-          </QBtn>
-          <QBtn v-if='remove' color='black' dense fab-mini flat @click='doRemove(cell.row.id)'>
+          <QBtn v-if='remove' class='text-red'  dense fab-mini flat @click='doRemove(cell.row.id)'>
             <q-icon name='delete' style='font-size: 20px' />
             <QTooltip>Eliminar</QTooltip>
           </QBtn>
         </QTd>
       </template>
-    </QTable>
+    </q-table>
     <div class='q-pa-lg flex flex-center'>
+      <QPagination
+        v-if='lastpage>0'
+        :model-value='current'
+        :max='lastpage'
+        active-color='black'
+        boundary-links
+        color='black'
+        direction-links/>
     </div>
 
   </div>
@@ -142,7 +125,7 @@ export default defineComponent({
   }) {
     const $q = useQuasar();
     let visible = ref(false);
-    let objData = ref([]);
+    let rows = ref<Record<any, any>>([]);
     let _pagination = computed({
       get: () => props.pagination,
       set: (value) => emit('update:pagination', value)
@@ -157,10 +140,10 @@ export default defineComponent({
     });
     let filter = ref('');
 
-    let _filterSearchValue = computed({
-      get: () => props.filterSearchValue,
-      set: (value) => emit('update:filterSearchValue', value)
-    });
+    // let _filterSearchValue = computed({
+    //   get: () => props.filterSearchValue,
+    //   set: (value) => emit('update:filterSearchValue', value)
+    // });
     let _filterSearchCriteria = computed({
       get: () => props.filterSearchCriteria,
       set: (value) => emit('update:filterSearchCriteria', value)
@@ -176,8 +159,10 @@ export default defineComponent({
     }
 
     function doEdit(row: bigint) {
+      // Loading.show()
       $q.loading.show();
       setTimeout(() => {
+        // Loading.hide()
         $q.loading.hide();
       }, 1000);
       props.edit(row);
@@ -186,7 +171,6 @@ export default defineComponent({
     function doRemove(row: bigint) {
       confirmDialog(() => {
         props.remove(row).then(() => {
-          // console.log(data);
           current.value = 1;
           getData(props.endpoint);
         });
@@ -202,17 +186,11 @@ export default defineComponent({
       }, 'Cambiar estado', '¿Está seguro que desea cambiar el estado del elemento?');
     }
 
-    function doPayment(row: bigint) {
-      props.payment(row);
-    }
 
     function doPlatform(row: bigint) {
       props.platform(row);
     }
 
-    function doPrices(row: bigint) {
-      props.prices(row);
-    }
 
     function doValues(row: bigint) {
       props.values(row);
@@ -232,19 +210,16 @@ export default defineComponent({
 
     //
 
-    function getData(endpoint: String, page: Number = 1) {
+    function getData(endpoint = '', page = 1) {
       visible.value = true;
 
-      let requestUrl = endpoint + '?page=' + page + filterSearch.value;
-
-      console.log(requestUrl);
+      let requestUrl = endpoint + '?page=' + String(page) + filterSearch.value;
       api.get(requestUrl).then(({ data }) => {
+
         visible.value = false;
         const paginationContext = data.data;
-        console.log(paginationContext);
-        objData.value = paginationContext.data;
-        if (checkIfEmpty(objData.value)) {
-          console.log(objData);
+        rows.value = paginationContext;
+        if (checkIfEmpty(rows.value)) {
           _columns.value = [];
         }
         lastpage.value = paginationContext.last_page;
@@ -281,6 +256,7 @@ export default defineComponent({
     let status = reactive({});
     let dateFilter = reactive({});
     return {
+      _filterModel,
       searchText,
       status,
       _filterStatus,
@@ -297,13 +273,11 @@ export default defineComponent({
       doEdit,
       doRemove,
       doActive,
-      doPayment,
       filter,
       doPlatform,
-      doPrices,
       doValues,
       _pagination,
-      objData
+      rows
     };
   }
 });

@@ -4,16 +4,16 @@ function confirmDialog (callback: () => void, title: any, message: any) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   Dialog.create({
     title: title,
-    class: 'text-caption text-black',
+    class: 'text-caption text-primary',
     cancel: {
-      push: true,
+      push:true,
       label: 'Cancelar',
-      color: 'grey'
+      color: 'red'
     },
     ok: {
       push: true,
       label: 'Aceptar',
-      color: 'black'
+      color: 'blue'
     },
     html: true,
     message: message,
@@ -21,8 +21,6 @@ function confirmDialog (callback: () => void, title: any, message: any) {
     persistent: true
   }).onOk(() => {
     callback()
-  }).onOk(() => {
-    // console.log('>>>> second OK catcher')
   }).onCancel(() => {
     // console.log('>>>> Cancel')
   }).onDismiss(() => {
