@@ -1,5 +1,29 @@
 <template>
   <div>
+
+    <QCard v-if='filterEnable' bordered class=' q-my-md' flat>
+      <QCardSection>
+        <div class='row q-col-gutter-md justify-between'>
+
+          <div class='col-md-4 col-xs-12'>
+            <q-input v-model='searchText' :placeholder='filterSearchText ' dense>
+              <template v-slot:prepend>
+                <q-icon id='searchicon' class='cursor-pointer' name='search'/>
+              </template>
+            </q-input>
+          </div>
+          <!--          <div class='col-md-3 col-xs-12 '>-->
+          <!--            <DenseSelect v-if='filterStatus' :options='_filterStatus' :text.sync='status' label='Estado' map-options-->
+          <!--                         option-label='name' option-value='code' />-->
+          <!--          </div>-->
+          <div class='col-md-2 col-xs-12 q-pt-lg q-gutter-xs text-center'>
+            <DenseButton :action='doFilter' class='justify-end items-end' text='Filtrar'/>
+            <DenseButton :action='doClean' class='justify-end items-end' iconName='cancel' text=''/>
+          </div>
+        </div>
+      </QCardSection>
+
+    </QCard>
     <q-table
       :columns='_columns'
       v-model:rows='rows'
@@ -8,9 +32,8 @@
       :pagination='_pagination'
       :row-key="rowKey?rowKey:'id'"
       table-header-class="text-black text-capitalize text-weight-bold"
-      bordered
+
       class='q-mt-md'
-      flat
       loading-label='Loading, please wait...'
       no-data-label='No hay datos que mostrar.'
     >
