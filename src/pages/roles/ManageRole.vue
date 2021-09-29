@@ -40,12 +40,14 @@
 
     <q-separator />
     <br>
-
     <GenericTableBackend
       :columns='columns'
-      endpoint='http://localhost:8083/rest/item/get'
+      endpoint='/rest/item/get'
       :edit='edit'
       :remove='remove'
+      :filter-enable='true'
+      filter-search-placeholder='Ingresar busqueda'
+      :filter-search-criteria='["title"]'
     />
     <br>
 
@@ -59,7 +61,7 @@ import { api } from 'boot/axios';
 
 
 const columns = [
-  // {name: 'id', align: 'center', label: 'ID', field: 'id', sortable: true},
+  {name: 'id', align: 'center', label: 'ID', field: 'id', sortable: true},
   { name: 'title', align: 'center', label: 'Titulo', field: 'title', sortable: true },
   { name: 'icon', align: 'center', label: 'Icono', field: 'icon', sortable: true },
   { name: 'route', align: 'center', label: 'Ruta', field: 'route', sortable: true },
@@ -96,16 +98,14 @@ export default defineComponent({
       console.log(id);
     }
 
-    function edit(row) {
-      console.log(row);
+    function edit(id) {
+      console.log(id);
     }
 
-    function remove(row){
-      console.log(row);
-      return new Promise((resolve)=>{
-        resolve('remove')
-      })
+    function remove(id: string) {
+      return api.delete('rest/item/delete?id=' + id);
     }
+
     function submit(evt) {
       console.log(myform.value);
       void api.post('rest/item/save', {

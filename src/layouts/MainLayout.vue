@@ -42,7 +42,7 @@
     </q-drawer>
 
     <q-page-container class='bg-grey-2'>
-      <q-card class='q-ma-md q-pa-md' style='max-height: 100%;max-width: 100%'>
+      <q-card class='q-ma-md' style='max-height: 100%;max-width: 100%'>
         <q-breadcrumbs class='text-brown'>
           <template v-slot:separator>
             <q-icon
@@ -56,8 +56,7 @@
           <q-breadcrumbs-el label='Components' icon='widgets' />
           <q-breadcrumbs-el label='Breadcrumbs' icon='navigation' />
         </q-breadcrumbs>
-      </q-card>
-      <q-card class='q-ma-md  q-pa-md' style='max-height: 100%;max-width: 100%'>
+        <q-separator/>
         <router-view />
       </q-card>
     </q-page-container>

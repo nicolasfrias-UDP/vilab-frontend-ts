@@ -6,30 +6,26 @@
         <div class='row q-col-gutter-md justify-between'>
 
           <div class='col-md-4 col-xs-12'>
-            <q-input v-model='searchText' :placeholder='filterSearchText ' dense>
-              <template v-slot:prepend>
-                <q-icon id='searchicon' class='cursor-pointer' name='search'/>
+            <q-input v-model='searchText' clearable :placeholder='filterSearchPlaceholder ' dense>
+              <template v-slot:before>
+                <q-btn round dense flat @click='doFilter' icon="fas fa-search" />
               </template>
             </q-input>
           </div>
           <!--          <div class='col-md-3 col-xs-12 '>-->
-          <!--            <DenseSelect v-if='filterStatus' :options='_filterStatus' :text.sync='status' label='Estado' map-options-->
+          <!--            <DenseSelect v-if='filterStatus' :options='prop_filterStatus' :text.sync='status' label='Estado' map-options-->
           <!--                         option-label='name' option-value='code' />-->
           <!--          </div>-->
-          <div class='col-md-2 col-xs-12 q-pt-lg q-gutter-xs text-center'>
-            <DenseButton :action='doFilter' class='justify-end items-end' text='Filtrar'/>
-            <DenseButton :action='doClean' class='justify-end items-end' iconName='cancel' text=''/>
-          </div>
         </div>
       </QCardSection>
 
     </QCard>
     <q-table
-      :columns='_columns'
+      :columns='prop_columns'
       v-model:rows='rows'
       :filter='filter'
       :loading='visible'
-      :pagination='_pagination'
+      :pagination='prop_pagination'
       :row-key="rowKey?rowKey:'id'"
       table-header-class="text-black text-capitalize text-weight-bold"
 
@@ -62,7 +58,7 @@
     <div class='q-pa-lg flex flex-center'>
       <QPagination
         v-if='lastpage>0'
-        :model-value='current'
+        v-model='current'
         :max='lastpage'
         active-color='black'
         boundary-links
@@ -79,10 +75,11 @@ import { confirmDialog } from 'src/utils/Alerts';
 import { QTable, useQuasar } from 'quasar';
 import { checkIfEmpty, makeQueryParam } from 'src/utils/Helpers';
 import { api } from 'boot/axios';
+import DenseButton from 'components/buttons/DenseButton.vue';
 
 export default defineComponent({
   name: 'GenericTableBackend',
-  components: {},
+  components: { DenseButton },
   extend: QTable,
   props: {
     columns: {
@@ -128,7 +125,7 @@ export default defineComponent({
     filterSearchCriteria: {
       type: [Array, String]
     },
-    filterSearchText: {
+    filterSearchPlaceholder: {
       type: String
     },
     filterStatus: {
@@ -146,18 +143,28 @@ export default defineComponent({
   setup(props: any, {
     emit
   }) {
+
     const $q = useQuasar();
+
+    let filterSearch = ref('');
+    let searchText = ref('');
+    let priority = ref({});
+    let status = reactive({});
+    let dateFilter = reactive({});
+    let lastpage = ref(0);
+    let current = ref(1);
     let visible = ref(false);
     let rows = ref<Record<any, any>>([]);
-    let _pagination = computed({
+
+    let prop_pagination = computed({
       get: () => props.pagination,
       set: (value) => emit('update:pagination', value)
     });
-    let _filterStatus = computed({
+    let prop_filterStatus = computed({
       get: () => props.filterStatus,
       set: (value) => emit('update:filterStatus', value)
     });
-    let _filterPriority = computed({
+    let prop_filterPriority = computed({
       get: () => props.filterPriority,
       set: (value) => emit('update:filterPriority', value)
     });
@@ -167,12 +174,12 @@ export default defineComponent({
     //   get: () => props.filterSearchValue,
     //   set: (value) => emit('update:filterSearchValue', value)
     // });
-    let _filterSearchCriteria = computed({
+    let prop_filterSearchCriteria = computed({
       get: () => props.filterSearchCriteria,
       set: (value) => emit('update:filterSearchCriteria', value)
     });
 
-    let _columns = computed({
+    let prop_columns = computed({
       get: () => props.columns,
       set: (value) => emit('update:columns', value)
     });
@@ -219,52 +226,52 @@ export default defineComponent({
       props.values(row);
     }
 
-    let lastpage = ref(0);
-
-    let current = ref(1);
 
     onMounted(() => {
       getData(props.endpoint);
     });
 
     watch(current, (next) => {
+      console.log(next);
       getData(props.endpoint, Number(next));
     });
 
-    //
+    function doVisibleTable(value){
+      visible.value=value
+    }
 
     function getData(endpoint = '', page = 1) {
-      visible.value = true;
+      doVisibleTable(true);
 
       let requestUrl = endpoint + '?page=' + String(page) + filterSearch.value;
       api.get(requestUrl).then(({ data }) => {
-
-        visible.value = false;
-        const paginationContext = data.data;
-        rows.value = paginationContext;
+        doVisibleTable(false);
+        const paginationContext = data;
+        rows.value = paginationContext.data;
         if (checkIfEmpty(rows.value)) {
-          _columns.value = [];
+          prop_columns.value = [];
         }
+        console.log(paginationContext);
         lastpage.value = paginationContext.last_page;
-        _pagination.value.rowsPerPage = lastpage.value;
+        prop_pagination.value.rowsPerPage = lastpage.value;
       }).catch(() => {
-        visible.value = true;
+        doVisibleTable(true);
       });
     }
 
     function doFilter() {
       let filters = '';
-      props.filterModel?.forEach((value: { model: any; type: any }) => {
-        filters += makeQueryParam(value.model, value.type);
-      });
-      let searchFilterValues = makeQueryParam(_filterSearchCriteria.value, 'search_criteria');
-      let searchFilterText = makeQueryParam(searchText.value, 'search_text');
-      filterSearch.value = searchFilterValues + searchFilterText + filters;
+        props.filterModel?.forEach((value: { model: any; type: any }) => {
+          filters += makeQueryParam(value.model, value.type);
+        });
+        let searchFilterValues = makeQueryParam(prop_filterSearchCriteria.value, 'search_criteria');
+        let searchFilterText = makeQueryParam(searchText.value??'', 'search_text');
+        filterSearch.value = searchFilterValues + searchFilterText + filters;
 
       getData(props.endpoint);
     }
 
-    let _filterModel = computed({
+    let prop_filterModel = computed({
       get: () => props.filterModel,
       set: (value) => emit('update:filterModel', value)
     });
@@ -272,24 +279,18 @@ export default defineComponent({
     function doClean() {
       searchText.value = '';
     }
-
-    let filterSearch = ref('');
-    let searchText = ref('');
-    let priority = ref({});
-    let status = reactive({});
-    let dateFilter = reactive({});
     return {
-      _filterModel,
+      prop_filterModel,
       searchText,
       status,
-      _filterStatus,
-      _filterPriority,
+      prop_filterStatus,
+      prop_filterPriority,
       doClean,
       doFilter,
       priority,
       dateFilter,
       visible,
-      _columns,
+      prop_columns,
       current,
       lastpage,
       doView,
@@ -299,7 +300,7 @@ export default defineComponent({
       filter,
       doPlatform,
       doValues,
-      _pagination,
+      prop_pagination,
       rows
     };
   }

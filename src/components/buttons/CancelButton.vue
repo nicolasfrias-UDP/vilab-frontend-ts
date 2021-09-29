@@ -1,13 +1,12 @@
 <template>
-  <q-page padding>
-    <h3>HOLA</h3>
-    {{$route.params.id}}
-  </q-page>
+  <QBtn class="btn-default" label="Cancelar" size="md"
+        @click="$router.back()"/>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+
 export default defineComponent({
-  // name: 'PageName'
+  name: 'CancelButton'
 })
 </script>
