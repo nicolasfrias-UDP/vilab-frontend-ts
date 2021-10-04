@@ -44,7 +44,7 @@
             <q-icon :name="cell.row.active ? 'check_circle' : 'block'" style='font-size: 20px' />
             <QTooltip>{{ cell.row.active ? 'Activo' : 'Inactivo' }}</QTooltip>
           </QBtn>
-          <QBtn v-if='edit' class='text-blue-3' dense fab-mini flat @click='doEdit(cell.row.id)'>
+          <QBtn v-if='edit' class='text-blue-3' dense fab-mini flat @click='doEdit(cell.row)'>
             <q-icon name='edit' style='font-size: 20px' />
             <QTooltip>Editar</QTooltip>
           </QBtn>

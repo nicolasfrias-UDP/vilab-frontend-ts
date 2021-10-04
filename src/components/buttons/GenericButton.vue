@@ -29,6 +29,7 @@ export default defineComponent({
   emits: ['action'],
   setup (props: any, { emit }) {
     function doAction () {
+      void props  
       emit('action')
     }
 
