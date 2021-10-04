@@ -1,107 +1,89 @@
 <template>
-  <q-page class='q-ma-md'>
+  <q-page padding class='q-pa-md'>
 
-
-    <q-form ref='myform' class='q-mb-md' @submit='submit'>
-      <span class='text-h5'>Crear predio</span>
-      <div class='row q-col-gutter-xs '>
-        <div class='col-12 col-md-5 col-sm-12'>
-          <q-input rounded outlined v-model='title' label='Nombre de predio' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12 '>
-          <q-input rounded outlined v-model='route' label='Tipo de cultivo' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12'>
-          <q-input rounded outlined v-model='title' label='Variedades' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12'>
-          <q-input rounded outlined v-model='route' label='Area (m2)' type='number' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12'>
-          <q-select rounded outlined v-model='title' label='Estación metereológica' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12 '>
-
-          <q-input rounded outlined v-model='route' label='Escala' type='number' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12 '>
-          <q-select rounded outlined v-model='title' label='Comuna' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12'>
-
-          <q-input rounded outlined v-model='route' label='Región' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12 '>
-          <q-select rounded outlined v-model='route' label='Estado' :options='["activo","inactivo"]' />
-        </div>
-
-        <div class='col-12 col-md-5 col-sm-12'>
-          <q-select rounded outlined v-model='route' label='Tamaño' type='number' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12 '>
-          <q-select rounded outlined v-model='route' label='Lote' />
-        </div>
+    <VButton text='Agregar predio' @action='addPlot' />
+    <br>
+    <br>
+    <div class='row q-col-gutter-md'>
+      <div class='col col-3'>
+        <QTable
+          style='max-width: 350px;width: 100%'
+          title='Predios'
+          :columns='plotColumns'
+          :filter='filter'
+          :rows='plotData' :pagination='plotPagination'
+          @row-click='rowClick'
+        >
+          <template v-slot:top-right>
+            <q-input borderless dense debounce='300' v-model='filter' placeholder='Search'>
+              <template v-slot:append>
+                <q-icon name='search' />
+              </template>
+            </q-input>
+          </template>
+        </QTable>
       </div>
-      <div class='row q-col-gutter-xs q-mt-xs'>
-
-        <div class='col-12 col-md-5 col-sm-12 '>
-          <q-input rounded outlined :rules="['date']" label='División'>
-            <template v-slot:append>
-              <q-icon name='event' class='cursor-pointer'>
-                <q-popup-proxy ref='qDateProxy' transition-show='scale' transition-hide='scale'>
-                  <q-date v-model='date'>
-                    <div class='row items-center justify-end'>
-                      <q-btn v-close-popup label='Close' color='primary' flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-        </div>
-        <div class='col-12 col-md-5 col-sm-12'>
-          <q-input rounded outlined :rules="['date']" label='Fecha de plantación'>
-            <template v-slot:append>
-              <q-icon name='event' class='cursor-pointer'>
-                <q-popup-proxy ref='qDateProxy' transition-show='scale' transition-hide='scale'>
-                  <q-date v-model='date'>
-                    <div class='row items-center justify-end'>
-                      <q-btn v-close-popup label='Close' color='primary' flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-        </div>
+      <div class='col'>
+        <l-map ref='mapRef' style='height:800px' :zoom='zoom' :center='geolocationPlot'>
+          <l-tile-layer url='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+                        :max-zoom='18'></l-tile-layer>
+          <l-geo-json :geojson='geojson' :options='geojsonOptions' />
+          <l-polyline :options="{ position: 'bottomright' }"></l-polyline>
+          <l-control position='topright'>
+            <VButtonIcon round class='bg-white text-blue-7' icon-name='fas fa-map-pin' tooltip='Agregar'>
+            </VButtonIcon>
+          </l-control>
+          <l-control position='topright'>
+            <VButtonIcon round class='bg-white text-blue-7 ' icon-name='layers'>
+            </VButtonIcon>
+          </l-control>
+          <l-control position='topright'>
+            <VButtonIcon round class='bg-white text-blue-7' icon-name='open_in_full'>
+            </VButtonIcon>
+          </l-control>
+          <l-control position='topright'>
+            <VButtonIcon round class='bg-white text-blue-7' icon-name='my_location'>
+            </VButtonIcon>
+          </l-control>
+          <l-control position='topright'>
+            <VButtonIcon round class='bg-white text-blue-7' icon-name='fas fa-ruler' tooltip='Medir'>
+            </VButtonIcon>
+          </l-control>
+          <l-marker :lat-lng='geolocationPlot'>
+            <p-popup :content="label" v-if="mapdata.with_popup"></p-popup>
+            <p-tooltip2 :content="label" v-if="mapdata.with_tooltip"></p-tooltip2>
+          </l-marker>
+        </l-map>
       </div>
-      <q-btn type='submit' color='secondary' icon='far fa-save' label='Guardar' rounded />
-
-
-    </q-form>
-    <l-map style='height:500px' :zoom='5' :center='[-33.4430, -70.6538]'>
-      <l-tile-layer url='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
-                    :max-zoom='18'></l-tile-layer>
-      <l-geo-json :geojson='geojson' :options='geojsonOptions' />
-      <l-polyline :options="{ position: 'bottomright' }"></l-polyline>
-      <l-control position='bottomleft'>
-        <button @click='clickHandler'>
-          I am a useless button!
-        </button>
-      </l-control>
-      <l-marker :lat-lng='[-33.4430, -70.6538]'></l-marker>
-      <l-circle-marker :lat-lng='[-33.4430, -70.6538]' :radius='50' color='red' />
-    </l-map>
+    </div>
   </q-page>
 </template>
 
 <script lang='ts'>
 import { LCircleMarker, LControl, LGeoJson, LMap, LMarker, LPolyline, LTileLayer } from '@vue-leaflet/vue-leaflet';
-import { defineComponent, reactive } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
+import VButtonIcon from 'components/buttons/VButtonIcon.vue';
+import VButton from 'components/buttons/VButtonIcon.vue';
+
+import useCustomRoute from 'src/composables/useCustomRoute';
+import PlotService from 'src/services/PlotService';
+import IFeatureCollectionGeoJson from 'src/interfaces/IFeatureCollectionGeoJson';
+
+const plotColumns = [
+  { name: 'plot', align: 'center', label: 'PREDIO', field: row => row.properties.pre_nombre, sortable: true },
+  { name: 'crop', align: 'center', label: 'CULTIVO', field: row => row.properties.cultivo, sortable: false }
+];
+
+const plotPagination = {
+  sortBy: 'desc',
+  rowsPerPage: 15
+};
 
 export default defineComponent({
   name: 'PlotIndex',
   components: {
+    VButtonIcon,
+    VButton,
     LMap,
     LGeoJson,
     LTileLayer,
@@ -130,14 +112,54 @@ export default defineComponent({
     //   circleMarker(latLng, { radius: 8 })
   },
   setup() {
-    const form = reactive({});
+    const plotData = ref();
+    const geolocationPlot = ref([
+      -32.227609138, -70.824386972]);
+    const zoom = ref(7);
+    const mapRef = ref();
+    const filter = ref();
+
+    const plotService = new PlotService();
+    let plotsFeatureCollection = ref<IFeatureCollectionGeoJson>({});
+
+    const { toRoute } = useCustomRoute();
 
     function submit() {
       console.log('submit');
     }
 
+    function addPlot() {
+      toRoute('plot.add');
+    }
+
+    function rowClick(evt: any, row) {
+      void evt;
+
+      let plotId = row.properties.pre_id;
+      geolocationPlot.value = [row.properties.pre_lat, row.properties.pre_long];
+      zoom.value = 8;
+
+      console.log(geolocationPlot.value);
+      console.log(mapRef.value.zoom);
+    }
+
+    onMounted(async () => {
+      await plotService.getList();
+      plotsFeatureCollection.value = plotService.getPlotFeatureCollection();
+      console.log(plotsFeatureCollection.value.features);
+      plotData.value = plotsFeatureCollection.value.features;
+    });
+
     return {
-      submit
+      submit,
+      addPlot,
+      plotsFeatureCollection, plotColumns,
+      plotData, plotPagination,
+      geolocationPlot,
+      rowClick,
+      zoom,
+      mapRef,
+      filter
     };
   }
 });

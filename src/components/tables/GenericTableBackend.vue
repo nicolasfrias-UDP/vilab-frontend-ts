@@ -8,7 +8,7 @@
           <div class='col-md-4 col-xs-12'>
             <q-input v-model='searchText' clearable :placeholder='filterSearchPlaceholder ' dense>
               <template v-slot:before>
-                <q-btn round dense flat @click='doFilter' icon="fas fa-search" />
+                <q-btn round dense flat @click='doFilter' icon='fas fa-search' />
               </template>
             </q-input>
           </div>
@@ -27,7 +27,7 @@
       :loading='visible'
       :pagination='prop_pagination'
       :row-key="rowKey?rowKey:'id'"
-      table-header-class="text-black text-capitalize text-weight-bold"
+      table-header-class='text-black text-capitalize text-weight-bold'
 
       class='q-mt-md'
       loading-label='Loading, please wait...'
@@ -48,7 +48,7 @@
             <q-icon name='edit' style='font-size: 20px' />
             <QTooltip>Editar</QTooltip>
           </QBtn>
-          <QBtn v-if='remove' class='text-red'  dense fab-mini flat @click='doRemove(cell.row.id)'>
+          <QBtn v-if='remove' class='text-red' dense fab-mini flat @click='doRemove(cell.row.id)'>
             <q-icon name='delete' style='font-size: 20px' />
             <QTooltip>Eliminar</QTooltip>
           </QBtn>
@@ -63,7 +63,7 @@
         active-color='black'
         boundary-links
         color='black'
-        direction-links/>
+        direction-links />
     </div>
 
   </div>
@@ -75,11 +75,10 @@ import { confirmDialog } from 'src/utils/Alerts';
 import { QTable, useQuasar } from 'quasar';
 import { checkIfEmpty, makeQueryParam } from 'src/utils/Helpers';
 import { api } from 'boot/axios';
-import DenseButton from 'components/buttons/DenseButton.vue';
 
 export default defineComponent({
   name: 'GenericTableBackend',
-  components: { DenseButton },
+  components: {  },
   extend: QTable,
   props: {
     columns: {
@@ -232,12 +231,11 @@ export default defineComponent({
     });
 
     watch(current, (next) => {
-      console.log(next);
       getData(props.endpoint, Number(next));
     });
 
-    function doVisibleTable(value){
-      visible.value=value
+    function doVisibleTable(value) {
+      visible.value = value;
     }
 
     function getData(endpoint = '', page = 1) {
@@ -248,10 +246,10 @@ export default defineComponent({
         doVisibleTable(false);
         const paginationContext = data;
         rows.value = paginationContext.data;
+        console.log(rows.value);
         if (checkIfEmpty(rows.value)) {
           prop_columns.value = [];
         }
-        console.log(paginationContext);
         lastpage.value = paginationContext.last_page;
         prop_pagination.value.rowsPerPage = lastpage.value;
       }).catch(() => {
@@ -261,12 +259,12 @@ export default defineComponent({
 
     function doFilter() {
       let filters = '';
-        props.filterModel?.forEach((value: { model: any; type: any }) => {
-          filters += makeQueryParam(value.model, value.type);
-        });
-        let searchFilterValues = makeQueryParam(prop_filterSearchCriteria.value, 'search_criteria');
-        let searchFilterText = makeQueryParam(searchText.value??'', 'search_text');
-        filterSearch.value = searchFilterValues + searchFilterText + filters;
+      props.filterModel?.forEach((value: { model: any; type: any }) => {
+        filters += makeQueryParam(value.model, value.type);
+      });
+      let searchFilterValues = makeQueryParam(prop_filterSearchCriteria.value, 'search_criteria');
+      let searchFilterText = makeQueryParam(searchText.value ?? '', 'search_text');
+      filterSearch.value = searchFilterValues + searchFilterText + filters;
 
       getData(props.endpoint);
     }
@@ -279,6 +277,7 @@ export default defineComponent({
     function doClean() {
       searchText.value = '';
     }
+
     return {
       prop_filterModel,
       searchText,
