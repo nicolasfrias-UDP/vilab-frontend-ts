@@ -18,7 +18,7 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   setup() {
-    console.log('ga');
+    console.log('');
   }
 });
 </script>

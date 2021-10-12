@@ -6,7 +6,6 @@ import IFeatureCollectionGeoJson from 'src/interfaces/IFeatureCollectionGeoJson'
 export default class PlotService {
 
   private plot: Ref<IPlotResponse>
-  // private plot: Ref<any>;
   // private plots: Ref<Array<any>>;
 
   constructor() {
@@ -21,6 +20,7 @@ export default class PlotService {
   async getList() {
     const {data}=await api.get('predios')
     this.plot.value=data
+
   }
 
   getPlotFeatureCollection():IFeatureCollectionGeoJson  {

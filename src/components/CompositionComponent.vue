@@ -6,9 +6,6 @@
         {{ todo.id }} - {{ todo.content }}
       </li>
     </ul>
-    <p>Count: {{ todoCount }} / {{ meta.totalCount }}</p>
-    <p>Active: {{ active ? 'yes' : 'no' }}</p>
-    <p>Clicks on todos: {{ clickCount }}</p>
   </div>
 </template>
 
@@ -22,6 +19,8 @@ import {
   Ref,
 } from 'vue';
 import { Todo, Meta } from './models';
+import useLandLot from 'src/composables/useLandLot';
+
 
 function useClickCount() {
   const clickCount = ref(0);
@@ -58,7 +57,10 @@ export default defineComponent({
     }
   },
   setup(props) {
-    return { ...useClickCount(), ...useDisplayTodo(toRef(props, 'todos')) };
+
+
+
+    return {...useClickCount(), ...useDisplayTodo(toRef(props, 'todos')) };
   },
 });
 </script>

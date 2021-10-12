@@ -6,5 +6,6 @@ export interface IPlotResponse {
   page:string,
   geojson_predios:IFeatureCollectionGeoJson,
   predio: IFeatureGeoJson,
-  predio_fechas_json:Array<any>
+  predio_fechas_json:Array<any>,
+  datos_usuario: Array<{cantidad,hectareas}>
 }

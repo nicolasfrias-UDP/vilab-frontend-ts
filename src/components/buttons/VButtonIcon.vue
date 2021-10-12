@@ -12,7 +12,7 @@ import { defineComponent, onMounted, ref } from 'vue';
 import { QBtn } from 'quasar';
 
 export default defineComponent({
-  name: 'VButton',
+  name: 'VButtonIcon',
   props: {
     text: {
       type: String,
