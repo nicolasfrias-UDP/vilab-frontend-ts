@@ -10,6 +10,7 @@ const routes: RouteRecordRaw[] = [
       { path: '/roles',name:'role.index', component: () => import('pages/roles/ManageRole.vue') },
       { path: '/perfiles', component: () => import('pages/Index.vue') },
       { path: '/nico', component: () => import('pages/Nico.vue') },
+      { path: '/table', component: () => import('pages/table_example.vue') },
     ],
   },
   {

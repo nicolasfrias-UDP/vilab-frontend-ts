@@ -54,6 +54,16 @@
           </QBtn>
         </QTd>
       </template>
+      <template v-slot:body-cell="props">
+         <q-td
+         :props="props"
+         >
+           {{ props.value }}
+         <q-popup-edit v-model="rows[props.rowIndex][props.col.name]" buttons>
+           <q-input v-model="rows[props.rowIndex][props.col.name]"  dense autofocus counter />
+         </q-popup-edit>
+         </q-td>
+     </template>
     </q-table>
     <div class='q-pa-lg flex flex-center'>
       <QPagination
@@ -79,7 +89,7 @@ import DenseButton from 'components/buttons/DenseButton.vue';
 
 export default defineComponent({
   name: 'GenericTableBackend',
-  components: { DenseButton },
+//components: { DenseButton },
   extend: QTable,
   props: {
     columns: {

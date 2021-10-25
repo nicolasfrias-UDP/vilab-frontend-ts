@@ -2,27 +2,28 @@ cd <template>
   <q-page class='q-pa-md'>
     <!-- content -->
 
-    <q-form ref='myform' class='q-gutter-md' @submit='submit'>
-      <span class='text-h5'>Ingresar usuario</span>
-      <div class='row'>
-        <div class='col-12 col-md-5 col-sm-12 q-mr-md q-mt-md'>
-          <q-input rounded outlined v-model='Id' label='Id' />
-        </div>
-        <div class='col-12 col-md-5 col-sm-12 q-mr-md q-mt-md'>
+    <q-btn label="Agregar usuario"  icon='far fa-save' color="secondary" @click="prompt = true" />
 
-          <q-input rounded outlined v-model='Mail' label='Mail' />
-        </div>
-      </div>
-
-      <div class='row'>
+    <q-dialog v-model="prompt" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">Your address</div>
+        </q-card-section>
         <div class='col-12 col-md-5 col-sm-12'>
-          <q-input rounded outlined v-model='password' label='Password' />
+          <q-input  rounded outlined v-model="id" label="Id" autofocus @keyup.enter="prompt = false" :rules="[ val => val && val.length > 0 || 'Please type something']" />
         </div>
-      </div>
-      <q-btn @click="submit"  color='secondary' icon='far fa-save' label='Guardar' rounded />
-
-
-    </q-form>
+        <div class='col-12 col-md-5 col-sm-12'>
+        <q-input rounded outlined v-model="mail" label="Correo" autofocus @keyup.enter="prompt = false" :rules="[ val => val && val.length > 0 || 'Please type something']" />
+        </div>
+        <div class='col-12 col-md-5 col-sm-12'>
+          <q-input rounded outlined v-model="password" label="Contraseña" autofocus @keyup.enter="prompt = false"  :rules="[ val => val && val.length > 0 || 'Please type something']"/>
+        </div>
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn flat label="agregar usuario" @click="submit" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
       <GenericTableBackend
         :columns='columns'
         endpoint='http://[::1]/app_vilab/index.php/Nicolas/get_users_axios'
@@ -31,40 +32,25 @@ cd <template>
         :filter-search-criteria='["usu_mail"]'
         :edit='edit'
         :remove='remove'
-      />
+      >
+    </GenericTableBackend>
 
 
   </q-page>
-  <q-form ref='myformedit' class='q-gutter-md' @submit='submit'>
-  <q-dialog v-model="prompt" persistent>
-        <q-card style="min-width: 350px">
-          <q-card-section>
-            <div class="text-h6">editar usuario</div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <q-input rounded outlined v-model="usuario" autofocus @keyup.enter="prompt = false" label="mail usuario" />
-            <q-input rounded outlined v-model="password" autofocus @keyup.enter="prompt = false" label="contraseña usuario"/>
-          </q-card-section>
-
-          <q-card-actions align="right" class="text-primary">
-            <q-btn flat label="Cancel" v-close-popup />
-            <q-btn flat label="Editar" v-close-popup />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-  </q-form>  
 </template>
 
 
 <script lang='ts'>
-import {ref, onMounted} from 'vue'
+import {ref, onMounted} from 'vue';
+import {useQuasar } from 'quasar';
 import GenericTableBackend from 'components/tables/GenericTableBackend.vue';
 import { api } from 'boot/axios';
+import axios from 'axios';
 export default {
   name:'user_table',
   components: { GenericTableBackend },
   setup (){
+    const $q = useQuasar();
     const id = ref('');
     const mail = ref('');
     const password = ref('');
@@ -79,14 +65,52 @@ export default {
     rowsPerPage: 10,
     rowsNumber: 10
   });
+  const prompt = ref(false);
   function edit(row) {
-    console.log(row);
+
+  console.log(row);
   }
   function remove(usu_id) {
     console.log(usu_id);
   }
-  function submit(usu_id) {
-    console.log(usu_id);
+  function submit() {
+    if(id.value == '' || mail.value == '' || password.value == ''){
+      $q.notify({
+            color: 'red-5',
+            textColor: 'white',
+            icon: 'warning',
+            message: 'Debe rellenar todos los campos en rojo'
+          })
+    }else{
+          void axios({
+            'method':'POST',
+            'url': 'http://[::1]/app_vilab/index.php/Nicolas/add_user_axios',
+            'data':JSON.stringify({
+              'id':id.value,
+              'mail':mail.value,
+              'pass':password.value
+            })
+          }).then(function (response){
+            console.log(response.data);
+            $q.notify({
+                  color: 'green-4',
+                  textColor: 'white',
+                  icon: 'cloud_done',
+                  message: 'Usuario agregado correctamente'
+                });
+                prompt.value = false;
+                setTimeout(() => {
+                  //window.location.reload()
+                }, 2000);
+
+          })
+          .catch(function (error) {
+              console.log(error.response);
+            });
+          //window.location.reload()
+    }
+
+
   }
   /*function onrequest(props){
     const { page, rowsPerPage, sortBy, descending } = props.pagination
@@ -130,8 +154,12 @@ export default {
       edit,
       remove,
       submit,
-      prompt: ref(false),
-      address: ref(''),
+      id,
+      mail,
+      password,
+      myform,
+      $q,
+      prompt,
   //onrequest,
     };
   },
