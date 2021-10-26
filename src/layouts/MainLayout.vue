@@ -6,7 +6,7 @@
           flat
           dense
           round
-          icon='fas fa-hamburger'
+          icon='fas fa-bars'
           aria-label='Menu'
           @click='toggleLeftDrawer'
           color='secondary'
@@ -46,6 +46,9 @@
         <router-view />
       </q-card>
     </q-page-container>
+    <q-footer  reveal class='bg-white text-black'>
+      Copyright 2021 © Vilab. Todos los Derechos Reservados.
+    </q-footer>
   </q-layout>
 </template>
 
@@ -63,8 +66,8 @@ const linksList = [
     link: 'home'
   },
   {
-    title: 'Predios',
-    caption: 'Ingreso a la pagina principal de predios',
+    title: 'Proyectos',
+    caption: 'Ingreso a la pagina principal de proyectos',
     icon: 'fas fa-map',
     link: 'plot.index'
   },

@@ -2,7 +2,7 @@
   <q-card style='width: 100%'>
     <q-card-section>
       <div class='text-h6 '>
-        <span class='text-grey-7'>Predio: &nbsp;</span>
+        <span class='text-grey-7'>Proyecto: &nbsp;</span>
         <span class='text-h5 text-weight-bold'>{{ propertyDescription.pre_nombre }}</span>
       </div>
     </q-card-section>
@@ -36,9 +36,11 @@
               <div class='row'>
                 <div class='col q-mb-md'>
 
-                  <q-select dense v-model='selectIndexModel' map-options :options='propertyIndexOptions'
-                            label='Seleccionar indices'
-                            :options-html='optionsHtml' />
+                  <q-select dense v-model='selectIndexModel'
+                            map-options
+                            emit-value
+                            :options='propertyIndexOptions'
+                            label='Seleccionar indices' />
                 </div>
               </div>
               <div class='row'>
@@ -53,15 +55,35 @@
                 :options='chartOptions'
                 :redrawOnUpdate='true'
                 :oneToOneUpdate='false'
-                :animateOnUpdate='true' />
+                :animateOnUpdate='true'
+              />
               <span class='text-uppercase'>Leyenda</span>
               <q-separator />
+
+              <ul class='list-group border-x-0 rounded-0'>
+                <a v-for='(legendItem,index) in indicatorLandPlotLegend' :key='index'
+                   class='list-group-item li st-group-item-action'
+                   style='padding: 5px 0px 5px 5px;'>
+
+                  <span class='font-weight-semibold'
+                        style='font-size: 15px;'>
+                    <span class='badge mr-2'
+                          :style="'background-color: '+legendItem.color">
+                    &nbsp;&nbsp;
+                    </span>
+                    &nbsp;&nbsp;
+                    <b>{{ legendItem.name }}</b>
+                    [{{ legendItem.aux_datos }}]
+                  </span><br>
+                </a>
+
+              </ul>
               <div class='row'>
                 <div class='col '>
                   <span class='text-h6 text-bold'>Promedio: </span>
                 </div>
                 <div class='col text-center q-mt-xs'>
-                  <span>{{legendAverage}}</span>
+                  <span>{{ $store.getters['project/getPeriodAvg'] }}</span>
                 </div>
               </div>
 
@@ -98,12 +120,13 @@ import exporting from 'highcharts/modules/exporting';
 import offlineExporting from 'highcharts/modules/offline-exporting';
 import Highcharts from 'highcharts';
 import stockInit from 'highcharts/modules/stock';
-import { computed, defineComponent, inject, reactive, ref, watch } from 'vue';
+import { defineComponent, inject, onMounted, reactive, ref, watch,watchEffect } from 'vue';
 import VButtonDate from 'components/date/VButtonDate.vue';
 import useAverageIndexLandLot from 'src/composables/useAverageIndexLandLot';
-import moment from 'moment';
-import { date } from 'quasar';
 import useIndicatorLandPlot from 'src/composables/useIndicatorLandPlot';
+import DateUtil from 'src/utils/DateUtil';
+import { useStore } from 'src/store';
+import moment from 'moment';
 
 stockInit(Highcharts);
 exporting(Highcharts);
@@ -132,13 +155,18 @@ export default defineComponent({
     VueHighcharts
   },
   setup() {
-
-    const chartOptions = {
+    const { fetchIndexImage, fetchIndexImageLegend, indicatorLandPlotLegend } = useIndicatorLandPlot();
+    let chartOptions = reactive({
       chart: {
         plotBackgroundColor: null,
         plotBorderWidth: null,
         plotShadow: false,
-        type: 'pie'
+        type: 'pie',
+        margin: [0, 0, 0, 0],
+        options3d: {
+          enabled: true,
+          alpha: 45
+        }
       },
       title: {
         text: ''
@@ -151,6 +179,9 @@ export default defineComponent({
           valueSuffix: '%'
         }
       },
+      credits: {
+        enabled: false
+      },
       plotOptions: {
         pie: {
           allowPointSelect: true,
@@ -159,42 +190,32 @@ export default defineComponent({
             enabled: false,
             format: '<b>{point.name}</b>: {point.percentage:.1f} %'
           }
+        },
+
+        tooltip: {
+          pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
         }
       },
       series: [{
-        name: 'Brands',
+        name: 'Porcentaje',
         colorByPoint: true,
-        data: [{
-          name: 'Chrome',
-          y: 61.41,
-          sliced: true,
-          selected: true
-        }, {
-          name: 'Internet Explorer',
-          y: 11.84
-        }, {
-          name: 'Firefox',
-          y: 10.85
-        }, {
-          name: 'Edge',
-          y: 4.67
-        }]
+        data: indicatorLandPlotLegend.value
       }]
-    };
+    });
+    const plotServiceProvider: any = inject('PlotServiceProvider');
     const propertyCharacteristicTab = ref('indices');
     const splitterModel = ref(12);
-    const selectIndexModel = ref(null);
-    const optionsHtml = ref(false);
+    const selectIndexModel: any = ref(null);
 
-    const propertyDateModel = ref('');
+    const propertyDateModel = ref<any>(null);
     const propertyDateOptions = ref<Array<string>>([]);
-    const propertyDateConvert = ref<any>([]);
-
-    const legendAverage = ref('');
 
 
-    const { getIndicators, getIndicatorsLegend } = useIndicatorLandPlot();
-    const plotServiceProvider: any = inject('PlotServiceProvider');
+    const { getAvgIndex, avgIndex } = useAverageIndexLandLot();
+
+    const dateUtil = new DateUtil();
+    const store = useStore();
+
     let propertyDescription = reactive({
       pre_nombre: '',
       cultivo: '',
@@ -205,50 +226,86 @@ export default defineComponent({
       area: '',
       pre_id: ''
     });
+    let projectDate = {
+      date1: {
+        normalizeWithSlash: '',
+        normalizeWithDash: ''
+      }
+    };
 
-    watch(plotServiceProvider, (val) => {
+
+    //Cuando cargan los datos del predio proyecto
+    watch(plotServiceProvider,  (val) => {
+      selectIndex('');
+      selectIndex('ndvi');
       Object.assign(propertyDescription, val.properties);
       for (const valKey in propertyDescription) {
         if (!propertyDescription[valKey]) propertyDescription[valKey] = '-';
       }
+      // let lastDate=await setDatesToComponent(data); // Guarda las fechas en el componente QDate
+      // propertyDateModel.value=dateUtil.utcFormat(lastDate, 'DD/MM/YYYY')
     });
-
-    const { getAvgIndex, avgIndex } = useAverageIndexLandLot();
+    function selectIndex(index) {
+      selectIndexModel.value = index;
+    }
+    /*INDICES*/
     watch(selectIndexModel, async (val: any) => {
+      avgIndex.value = [];
       if (val && propertyDescription.pre_id) {
-        await getAvgIndex(propertyDescription.pre_id, val.value);
+        const data = await getAvgIndex(propertyDescription.pre_id, val); //Carga las fechas y promedios
+        setDatesToComponent(data)
       }
     });
 
-    watch(avgIndex, (val: Array<string>) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    watchEffect(async ()=>{
+      if ( propertyDateModel.value) {
+        let dateModel=propertyDateModel.value
+        let day=dateModel.split('/')[0]
+        let month=dateModel.split('/')[1]
+        let year=dateModel.split('/')[2]
+
+        let dashDate=dateUtil.dateToFormat(day,month,year,'YYYY-MM-DD')
+        await loadProjectImageData(selectIndexModel.value, dashDate,
+          dashDate, dashDate);
+      }
+    })
+    /* Fecha por indice */
+
+    async function loadProjectImageData(selectedIndex, date1, date2, date3) {
+      let project_id=propertyDescription.pre_id
+      await fetchIndexImage(project_id, selectedIndex, date1, date2, date3);
+      await fetchIndexImageLegend(project_id, selectedIndex, date1, date2, date3);
+    }
+
+    // Guarda las fechas en el componente y setea el promedio
+     function setDatesToComponent(datesArray: Array<any>) {
+      propertyDateModel.value = ''; // QInput con la fecha
       propertyDateOptions.value = [];
-      propertyDateConvert.value = [];
-      val.forEach((value) => {
-        let date = moment(value[0]).format('YYYY/MM/DD');
-        propertyDateOptions.value.push(date);
-        propertyDateConvert.value.push({ date, avg: value[1] });
-      });
-      propertyDateModel.value = moment(propertyDateOptions.value.reverse()[0]).format("DD/MM/YYYY");
-    });
-
-    // eslint-disable-next-line @typescript-eslint/require-await
-    watch(propertyDateModel, async(value) => {
-      if (value){
-        let normalizeDate=date.formatDate(value.split('/').reverse().join('/'),'YYYY/MM/DD')
-        let finder=propertyDateConvert.value.find((val)=>{
-          return val.date===normalizeDate
-        })
-        legendAverage.value=finder?.avg
-        let normalizeDateWithDash= date.formatDate(normalizeDate,'YYYY-MM-DD')
-
-        let selectedIndex:any=selectIndexModel.value
-        await getIndicators(propertyDescription.pre_id,selectedIndex.value,normalizeDateWithDash,normalizeDateWithDash,normalizeDateWithDash)
-        await getIndicatorsLegend(propertyDescription.pre_id,selectedIndex.value,normalizeDateWithDash,normalizeDateWithDash,normalizeDateWithDash)
-      }else{
-        legendAverage.value=''
+      if (datesArray && datesArray.length) {
+        datesArray.forEach((value) => {
+          let date = value[0];
+          propertyDateOptions.value.push(dateUtil.utcFormatSpace(date, '/'));
+        });
+        store.commit('project/setFirstPeriodUtc', datesArray.reverse()[0][0]);
+        store.commit('project/setPeriodAvg', datesArray.reverse()[0][1]);
+        propertyDateModel.value = dateUtil.utcFormat(datesArray.reverse()[0][0], 'DD/MM/YYYY'); //Poner la ultima fecha en el input Qselect qdate
+        return datesArray.reverse()[0][0]; //Retornar la fecha mas reciente
       }
+      return;
+    }
 
 
+    watch(indicatorLandPlotLegend, (value) => {
+      void value;
+      Object.assign(chartOptions, {
+        ...chartOptions,
+        series: [{
+          name: 'Porcentaje',
+          colorByPoint: true,
+          data: indicatorLandPlotLegend.value
+        }]
+      });
 
     });
 
@@ -258,12 +315,13 @@ export default defineComponent({
       chartOptions,
       propertyIndexOptions,
       selectIndexModel,
-      optionsHtml, plotServiceProvider,
+      plotServiceProvider,
       propertyDescription,
       avgIndex,
       propertyDateModel,
       propertyDateOptions,
-      legendAverage
+
+      indicatorLandPlotLegend
     };
   }
 });

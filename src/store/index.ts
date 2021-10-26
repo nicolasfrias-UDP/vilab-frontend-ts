@@ -1,5 +1,6 @@
 import { store } from 'quasar/wrappers'
 import { InjectionKey } from 'vue'
+import project from '../store/project'
 import {
   createStore,
   Store as VuexStore,
@@ -22,7 +23,7 @@ export interface StateInterface {
   // Define your own store structure, using submodules if needed
   // example: ExampleStateInterface;
   // Declared as unknown to avoid linting issue. Best to strongly type as per the line above.
-  example: unknown
+  project: unknown
 }
 
 // provide typings for `this.$store`
@@ -38,7 +39,7 @@ export const storeKey: InjectionKey<VuexStore<StateInterface>> = Symbol('vuex-ke
 export default store(function (/* { ssrContext } */) {
   const Store = createStore<StateInterface>({
     modules: {
-      // example
+      project
     },
 
     // enable strict mode (adds overhead!)

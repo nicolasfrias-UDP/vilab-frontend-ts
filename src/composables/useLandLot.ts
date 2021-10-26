@@ -8,6 +8,7 @@ export default function() {
   function saveLandLot(landLotArg:IFeatureGeoJson){
       landLot.value=landLotArg
   }
-  return {saveLandLot,
+  return {
+    saveLandLot,
     landLot}
 }
