@@ -70,60 +70,67 @@
           </template>
         </QTable>
       </div>
+
+      <q-btn label='CLICK HERE' @click='toggleApi'/>
+
       <div class='col' style='width: 100%;'>
-        <l-map ref='mapRef' id='mapRef' :fullscreen-control='true'
-               style='height:700px' :zoom='zoom' @ready='onLeafletReady'
-               @click='onLeafletClick'>
+          <div class="fullscreen-wrapper">
+          <l-map ref='mapRef' id='mapRef'
+                 style='height:700px' :zoom='zoom' @ready='onLeafletReady'
+                 @click='onLeafletClick'>
 
-          <template v-if='leafletReady'>
-            <l-tile-layer url='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
-                          :max-zoom='20' layer-type='base'>
-              <l-popup :lat-lng='mapPopUp.coord' :content='mapPopUp.content'></l-popup>
-            </l-tile-layer>
-            <l-geo-json :geojson='geoJSONObject' :options='geoJSONOptions' />
-            <l-control position='topright'>
-              <VButtonIcon round class='bg-white text-blue-7' icon-name='fas fa-map-pin' tooltip='Agregar'>
-              </VButtonIcon>
-            </l-control>
-            <l-control position='topright'>
-              <VButtonIcon round class='bg-white text-blue-7 ' icon-name='layers'>
-              </VButtonIcon>
-            </l-control>
-            <l-control position='topright'>
-              <VButtonIcon round class='bg-white text-blue-7' icon-name='open_in_full'>
-              </VButtonIcon>
-            </l-control>
-            <l-control position='topright'>
-              <VButtonIcon round class='bg-white text-blue-7' icon-name='my_location'
-                           @click='navigateToCoord(geolocation.latitude,geolocation.longitude)'>
-              </VButtonIcon>
-            </l-control>
-            <l-control position='topright'>
-              <VButtonIcon round class='bg-white text-blue-7' icon-name='fas fa-ruler' tooltip='Medir'>
-              </VButtonIcon>
-            </l-control>
+            <template v-if='leafletReady'>
+              <l-tile-layer url='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+                            :max-zoom='20' layer-type='base'>
+                <l-popup :lat-lng='mapPopUp.coord' :content='mapPopUp.content'></l-popup>
+              </l-tile-layer>
+              <l-geo-json :geojson='geoJSONObject' :options='geoJSONOptions' />
+              <l-control position='topright'>
+                <VButtonIcon round class='bg-white text-blue-7' icon-name='fas fa-map-pin' tooltip='Agregar'>
+                </VButtonIcon>
+              </l-control>
+              <l-control position='topright'>
+                <VButtonIcon round class='bg-white text-blue-7 ' icon-name='layers'>
+                </VButtonIcon>
+              </l-control>
+              <l-control position='topright'>
+                <VButtonIcon round class='bg-white text-blue-7' icon-name='open_in_full'>
+                </VButtonIcon>
+              </l-control>
+              <l-control position='topright'>
+                <VButtonIcon round class='bg-white text-blue-7' icon-name='my_location'
+                             @click='navigateToCoord(geolocation.latitude,geolocation.longitude)'>
+                </VButtonIcon>
+              </l-control>
+              <l-control position='topright'>
+                <VButtonIcon round class='bg-white text-blue-7' icon-name='fas fa-ruler' tooltip='Medir'>
+                </VButtonIcon>
+              </l-control>
 
-            <l-image-overlay v-if="$store.getters['project/getProjectIndexImage'].png"
-                             :url="$store.getters['project/getProjectIndexImage'].png"
-                             :bounds="$store.getters['project/getProjectIndexImage'].bounds"></l-image-overlay>
+              <l-image-overlay v-if="$store.getters['project/getProjectIndexImage'].png"
+                               :url="$store.getters['project/getProjectIndexImage'].png"
+                               :bounds="$store.getters['project/getProjectIndexImage'].bounds"></l-image-overlay>
 
 
-            <l-marker v-for='(feature,index) in plotData' :key='index'
-                      :lat-lng='[feature.geometry.coordinates[1],feature.geometry.coordinates[0]]'>
-              <l-popup>
-                <h5><b>{{ feature.properties.pre_nombre }}</b></h5>
-                <b>Comuna:</b> {{ feature.properties.comuna }}<br>
-                <b>Cultivo:</b> {{ feature.properties.cultivo }}<br>
-                <b>Variedad:</b> {{ feature.properties.variedad }}<br>
-                <b>Región:</b> {{ feature.properties.region }}<br>
-                <b>Provincia:</b> {{ feature.properties.provincia }}
-              </l-popup>
-            </l-marker>
-          </template>
-        </l-map>
+              <l-marker v-for='(feature,index) in plotData' :key='index'
+                        :lat-lng='[feature.geometry.coordinates[1],feature.geometry.coordinates[0]]'>
+                <l-popup>
+                  <h5><b>{{ feature.properties.pre_nombre }}</b></h5>
+                  <b>Comuna:</b> {{ feature.properties.comuna }}<br>
+                  <b>Cultivo:</b> {{ feature.properties.cultivo }}<br>
+                  <b>Variedad:</b> {{ feature.properties.variedad }}<br>
+                  <b>Región:</b> {{ feature.properties.region }}<br>
+                  <b>Provincia:</b> {{ feature.properties.provincia }}
+                </l-popup>
+              </l-marker>
+            </template>
+          </l-map>
+          </div>
       </div>
       <div class='col col-3 col-md-3 col-sm-12 col-xs-12'>
+        <fs v-model:fullscreen='fullscreen' :teleport='teleport' :page-only='pageOnly'>
         <PropertyCharacteristic />
+        </fs>
       </div>
     </div>
   </q-page>
@@ -134,7 +141,7 @@
 import HighCharts from 'highcharts';
 import HighchartsMore from 'highcharts/highcharts-more';
 import { LControl, LGeoJson, LImageOverlay, LMap, LMarker, LPopup, LTileLayer } from '@vue-leaflet/vue-leaflet';
-import { defineComponent, nextTick, onMounted, provide, reactive, ref, watch } from 'vue';
+import { defineComponent, nextTick, onMounted, provide, reactive, ref, toRefs, watch } from 'vue';
 import useCustomRoute from 'src/composables/useCustomRoute';
 import IFeatureCollectionGeoJson from 'src/interfaces/IFeatureCollectionGeoJson';
 import PropertyCharacteristic from 'components/plot/PropertyCharacteristic.vue';
@@ -150,8 +157,7 @@ import 'leaflet/dist/leaflet.css';
 
 const L = require('leaflet');
 require('vue2-leaflet/dist/vue2-leaflet.min');
-require('leaflet-fullscreen/dist/leaflet.fullscreen.css');
-require('leaflet-fullscreen/dist/Leaflet.fullscreen');
+
 
 HighchartsMore(HighCharts);
 const options = {
@@ -254,6 +260,11 @@ export default defineComponent({
   setup(props) {
     void props;
 
+    const state = reactive({
+      fullscreen: false,
+      teleport: true,
+      pageOnly: false
+    });
     let mapPopUp = reactive({
       coord: [-32.80718755615862, -70.82175809968166],
       content: 'hello'
@@ -365,13 +376,14 @@ export default defineComponent({
         leafletObject.value = mapRef.value.leafletObject;
         leafletReady.value = true;
 
-        leafletObject.value.addControl(new L.Control.Fullscreen());
-
       });
     }
+    function doFullscreen(){
+      // Object.assign(state,{fullscreen: true})
+      mapRef.value.requestFullscreen()
 
-    const divMap = ref();
-
+      console.log(state);
+    }
     function onLeafletClick(e: any) {
 
       if (e.latlng) {
@@ -406,7 +418,9 @@ export default defineComponent({
     provide('PlotServiceProvider', landLot);
 
     return {
+      doFullscreen,
       addPlot,
+      ...toRefs(state),
       plotsFeatureCollection, plotColumns,
       plotData, plotPagination,
       geolocationPlot,
@@ -427,7 +441,6 @@ export default defineComponent({
       onLeafletClick,
       leafletReady,
       mapPopUp,
-      divMap,
       navigateToCoord,
       geolocation
     };
